@@ -10,39 +10,26 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Activity, Folders, LayoutDashboard } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import Header from "./ui/header";
 import { usePathname } from "next/navigation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Button } from "./ui/button";
+
+export const links = [
+  {
+    label: "Dashboard",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    link: "dashboard",
+  },
+  {
+    label: "Repositories",
+    icon: <Folders className="h-5 w-5" />,
+    link: "repositories",
+  },
+];
 
 export function AppSidebar() {
-  const { data: session } = useSession();
-
-  const links = [
-    {
-      label: "Dashboard",
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      link: "dashboard",
-    },
-    {
-      label: "Repositories",
-      icon: <Folders className="h-5 w-5" />,
-      link: "repositories",
-    },
-  ];
-
   const pathName = usePathname();
-  const actualPath = links.find((link) => pathName === "/" + link.link)?.label;
 
   return (
     <>
@@ -77,30 +64,6 @@ export function AppSidebar() {
         </SidebarContent>
         <SidebarFooter />
       </Sidebar>
-      <div className="flex h-16 w-full flex-row items-center justify-between border-b p-4">
-        <h1 className="text-xl font-semibold">{actualPath}</h1>
-        <div className="flex items-center gap-4">
-          <span className="font-medium">{session?.user?.name}</span>
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Avatar className="cursor-pointer">
-                <AvatarImage
-                  src={session?.user?.image || undefined}
-                  className="h-8 w-8 rounded-full"
-                />
-                <AvatarFallback>
-                  {session?.user?.name?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => signOut()}>
-                Log Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
     </>
   );
 }

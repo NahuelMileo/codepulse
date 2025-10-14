@@ -1,5 +1,6 @@
 "use client";
 import { AppSidebar } from "@/components/app-sidebar";
+import Header from "@/components/ui/header";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -26,7 +27,10 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      {children}
+      <div className="w-full">
+        <Header />
+        {children}
+      </div>
     </SidebarProvider>
   );
 }
