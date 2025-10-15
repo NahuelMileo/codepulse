@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { use, useEffect, useState } from "react";
 import { Repo } from "../page";
 import AnalyzeCard from "@/components/RepositoryDetails/analyze-card";
 import RepositoryHeader from "@/components/RepositoryDetails/repository-header";
@@ -14,11 +14,11 @@ interface RepoDetailsPageProps {
 }
 
 export default function RepoDetailsPage({ params }: RepoDetailsPageProps) {
-  const [loading, setLoading] = React.useState(true);
-  const { reponame } = React.use(params);
-  const [repo, setRepo] = React.useState<Repo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { reponame } = use(params);
+  const [repo, setRepo] = useState<Repo | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch("/api/github/repos")
       .then((res) => res.json())
       .then((data: Repo[]) => {
@@ -37,7 +37,7 @@ export default function RepoDetailsPage({ params }: RepoDetailsPageProps) {
       <RepositoryDescription repo={repo} />
       <RepositoryStats repo={repo} />
       <RepositoryActivity repo={repo} />
-      <AnalyzeCard />
+      <AnalyzeCard repo={repo} />
     </div>
   );
 }

@@ -2,8 +2,9 @@ import { PlayCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Repo } from "@/app/(dashboard)/repositories/page";
+import Link from "next/link";
 
-export default function Page() {
+export default function Page({ repo }: { repo: Repo }) {
   return (
     <>
       <Card className="border-2 border-teal-500/20 bg-gradient-to-br from-teal-500/5 to-teal-500/10 p-8">
@@ -21,8 +22,13 @@ export default function Page() {
           </p>
           <div className="mt-8 flex gap-3">
             <Button size="lg" className="gap-2" variant={"accent"}>
-              <PlayCircle className="h-5 w-5" />
-              Execute analysis
+              <Link
+                href={`/repositories/${repo.name}/files`}
+                className="flex items-center gap-2"
+              >
+                <PlayCircle className="h-5 w-5" />
+                Execute analysis
+              </Link>
             </Button>
           </div>
         </div>

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Activity, Folders, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
-import Header from "./ui/header";
 import { usePathname } from "next/navigation";
 
 export const links = [
@@ -50,7 +49,7 @@ export function AppSidebar() {
                     className={pathName === "/" + link.link ? "bg-muted" : ""}
                   >
                     <SidebarMenuButton asChild>
-                      <Link href={link.link}>
+                      <Link href={"/" + link.link}>
                         {link.icon}
                         <span className="font-medium">{link.label}</span>
                       </Link>

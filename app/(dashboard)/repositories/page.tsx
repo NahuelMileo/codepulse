@@ -1,19 +1,17 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { ReactNode, useEffect, useState } from "react";
-import { FolderGit2, Folders, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Folders, Search } from "lucide-react";
 import RepoCard from "@/components/ui/repo-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Button } from "@/components/ui/button";
 
 export interface Repo {
   id: number;
@@ -54,7 +52,6 @@ export default function Page() {
       .then((data) => {
         setRepos(data);
         setLoading(false);
-        console.log(data);
       })
       .catch((err) => {
         console.log(err);
