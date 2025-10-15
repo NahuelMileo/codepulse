@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Folder, Loader2, FileCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { OpenAICodeAnalysisService } from "@/Infrastructure/Services/OpenAICodeAnalysisService";
 
 interface RepoFile {
   name: string;
@@ -32,7 +31,6 @@ export default function Page() {
 
     getFiles(session.user.name, repoName, "", session.accessToken)
       .then((files) => {
-        // console.log("📁 Archivos raíz:", files);
         setFiles(files);
       })
       .catch((err) => setError(err.message))
@@ -134,13 +132,14 @@ export default function Page() {
         },
       );
 
-      if (!res.ok)
-        throw new Error("No se pudo obtener el contenido del archivo");
-
-      const analyzer = new OpenAICodeAnalysisService(
-        process.env.OPENAI_API_KEY!,
-      );
-      const result = await analyzer.analyzeCode(await res.text(), file.name);
+      const code = await res.text();
+      console.log("📄 Código del archivo:", code);
+      const analysisRes = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const result = await analysisRes.json();
       console.log("✅ Resultado del análisis:", result);
     } catch (err) {
       console.error("❌ Error al analizar archivo:", err);

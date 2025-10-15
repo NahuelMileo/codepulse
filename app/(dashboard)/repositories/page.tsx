@@ -49,13 +49,13 @@ export default function Page() {
     setLoading(true);
     fetch("/api/github/repos")
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: Repo[]) => {
         setRepos(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err);
         setLoading(false);
+        throw new Error(err.message);
       });
   }, [session]);
 

@@ -6,6 +6,8 @@ export class FileAnalysis {
     message: string;
     severity: "low" | "medium" | "high";
     type: string;
+    snippet: string;
+    solution: string;
   }[];
 
   constructor(
@@ -16,6 +18,8 @@ export class FileAnalysis {
       message: string;
       severity: "low" | "medium" | "high";
       type: string;
+      snippet: string;
+      solution: string;
     }[],
   ) {
     this.fileName = fileName;

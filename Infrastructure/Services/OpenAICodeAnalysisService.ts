@@ -9,25 +9,34 @@ export class OpenAICodeAnalysisService implements ICodeAnalyzer {
     this.client = new OpenAI({ apiKey });
   }
 
-  async analyzeCode(code: string, fileName: string): Promise<FileAnalysis> {
+  async analyzeCode(code: string): Promise<FileAnalysis> {
     const prompt = `
-    You are a code analysis tool. Analyze the following code and provide a score from 0 to 100, where 100 is perfect code. Also, list any issues found with line numbers, messages, severity (low, medium, high), and type of issue.
-    The output should be in JSON format as follows:
-  {
-  "fileName": string,
+You are a professional code analyzer.
+Analyze the code EXACTLY as given.
+Provide:
+- A score from 0 to 100
+- Any issues found, with correct line numbers as per the text provided
+- Return JSON in the exact format below:
+
+{
+  "fileName": "string",
   "score": number,
   "issues": [
     {
       "line": number,
-      "message": string,
+      "message": "string",
       "severity": "low" | "medium" | "high",
-      "type": string
+      "type": "string",
+     "snippet": "string",
+     "solution": "string"
+    
     }
   ]
 }
-  ${fileName} code:
-  ${code}
-    `;
+
+Code to analyze:
+${code}
+`;
 
     const response = await this.client.chat.completions.create({
       model: "gpt-4o-mini",
