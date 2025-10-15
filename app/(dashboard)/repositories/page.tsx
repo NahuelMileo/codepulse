@@ -1,16 +1,42 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { ReactNode, useEffect, useState } from "react";
+import { FolderGit2, Folders, Search } from "lucide-react";
 import RepoCard from "@/components/ui/repo-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Button } from "@/components/ui/button";
 
 export interface Repo {
   id: number;
-  name: string;
-  html_url: string;
-  private: boolean;
   description: string | null;
+  language: string | null;
+  name: string;
+  full_name: string;
+  stargazers_count: number;
+  forks_count: number;
+  watchers_count: number;
+  open_issues_count: number;
+  default_branch: string;
+  created_at: string;
+  updated_at: string;
+  pushed_at: string;
+  private: boolean;
+  homepage: string | null;
+  html_url: string;
+  size: number;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
 }
 
 export default function Page() {
@@ -61,10 +87,32 @@ export default function Page() {
           className="pl-10"
         />
       </div>
-      <div className="mt-2 grid grid-cols-2 items-center gap-2">
-        {filteredRepos.map((repo) => (
-          <RepoCard key={repo.id} repo={repo} />
-        ))}
+      <div
+        className={`mt-2 grid ${
+          loading
+            ? "grid-cols-2"
+            : filteredRepos.length !== 0
+              ? "grid-cols-2"
+              : "grid-cols-1"
+        } items-center gap-4`}
+      >
+        {loading ? (
+          [...Array(8)].map((_, i) => (
+            <Skeleton className="h-[178px] w-full rounded-lg" key={i} />
+          ))
+        ) : filteredRepos.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Folders />
+              </EmptyMedia>
+              <EmptyTitle>No repositories</EmptyTitle>
+              <EmptyDescription>No repositories found</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          filteredRepos.map((repo) => <RepoCard key={repo.id} repo={repo} />)
+        )}
       </div>
     </div>
   );
