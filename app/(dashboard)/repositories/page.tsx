@@ -12,7 +12,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 export interface Repo {
   id: number;
@@ -43,7 +43,7 @@ export default function Page() {
   const [repositories, setRepositories] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session?.accessToken) {
@@ -55,10 +55,15 @@ export default function Page() {
     const fetchRepos = async () => {
       try {
         setLoading(true);
-        if (!process.env.NEXT_PUBLIC_API_URL) {
-          console.warn("NEXT_PUBLIC_API_URL is not set");
-        }
         const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+        if (!process.env.NEXT_PUBLIC_API_URL) {
+          console.error(
+            "❌ NEXT_PUBLIC_API_URL is not set in the environment variables.",
+          );
+          throw new Error(
+            "Missing API URL. Please configure NEXT_PUBLIC_API_URL in your environment.",
+          );
+        }
 
         const res = await fetch(`${API_URL}/api/github/repos`);
         if (!res.ok) {
@@ -70,8 +75,8 @@ export default function Page() {
         const data: Repo[] = await res.json();
         setRepositories(data);
       } catch (err) {
-        console.error("Error fetching repos:", err);
-        setError("Failed to load repositories.");
+        console.error("Error fetching repositories:", err);
+        setError(err instanceof Error ? err.message : "Unknown error");
         toast("Failed to load repositories.");
       } finally {
         setLoading(false);
@@ -80,7 +85,7 @@ export default function Page() {
 
     fetchRepos();
     // fetch repositories whenever the user's accessToken changes
-  }, [session]);
+  }, [session?.accessToken]);
 
   const filteredRepos = repositories.filter((repository) =>
     repository.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -92,6 +97,8 @@ export default function Page() {
       <p className="text-muted-foreground">
         Select a repository to start analyzing its health
       </p>
+
+      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
 
       <div className="relative">
         <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
