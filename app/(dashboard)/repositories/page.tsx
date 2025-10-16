@@ -55,7 +55,7 @@ export default function Page() {
       })
       .catch((err) => {
         setLoading(false);
-        throw err;
+        console.error("Error fetching repos:", err);
       });
   }, [session]);
 
