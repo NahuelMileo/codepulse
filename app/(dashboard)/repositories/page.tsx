@@ -51,7 +51,7 @@ export default function Page() {
       try {
         setLoading(true);
         const res = await fetch("/api/github/repos");
-        if (!res.ok) throw new Error("Error fetching repositories");
+        if (!res.ok) console.error("Error fetching repositories");
         const data: Repo[] = await res.json();
         setRepos(data);
       } catch (err) {
