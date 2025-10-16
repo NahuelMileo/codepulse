@@ -119,8 +119,6 @@ export default function Page() {
   async function analyze(file: RepoFile) {
     if (!selectedFile) return;
 
-    console.log("Analizando archivo:", file);
-
     try {
       const res = await fetch(
         `https://api.github.com/repos/${session!.user!.name}/${repoName}/contents/${file.path}`,
@@ -132,7 +130,11 @@ export default function Page() {
         },
       );
 
-      const code = await res.text();
+      const codeWithoutLineNumbers = await res.text();
+      const code = codeWithoutLineNumbers
+        .split("\n")
+        .map((line, index) => `${index + 1}|${line}`)
+        .join("\n");
       console.log("📄 Código del archivo:", code);
       const analysisRes = await fetch("/api/analyze", {
         method: "POST",

@@ -55,7 +55,7 @@ export default function Page() {
       })
       .catch((err) => {
         setLoading(false);
-        throw new Error(err.message);
+        throw err;
       });
   }, [session]);
 
