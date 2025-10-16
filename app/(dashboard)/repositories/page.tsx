@@ -46,17 +46,22 @@ export default function Page() {
 
   useEffect(() => {
     if (!session?.accessToken) return;
-    setLoading(true);
-    fetch("/api/github/repos")
-      .then((res) => res.json())
-      .then((data: Repo[]) => {
+
+    const fetchRepos = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/github/repos");
+        if (!res.ok) throw new Error("Error al obtener repositorios");
+        const data: Repo[] = await res.json();
         setRepos(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setLoading(false);
+      } catch (err) {
         console.error("Error fetching repos:", err);
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRepos();
   }, [session]);
 
   useEffect(() => {
