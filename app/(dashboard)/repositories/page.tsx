@@ -42,11 +42,11 @@ export default function Page() {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session?.accessToken) {
-      setError("No autorizado. Por favor, inicia sesión de nuevo.");
+      setError("Unauthorized, please login.");
       return;
     }
 
@@ -69,12 +69,8 @@ export default function Page() {
     fetchRepos();
   }, [session]);
 
-  const filteredRepos = useMemo(
-    () =>
-      repos.filter((repo) =>
-        repo.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      ),
-    [repos, searchQuery],
+  const filteredRepos = repos.filter((repo) =>
+    repo.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -104,9 +100,14 @@ export default function Page() {
         } items-center gap-4`}
       >
         {loading ? (
-          [...Array(8)].map((_, i) => (
-            <Skeleton className="h-[178px] w-full rounded-lg" key={i} />
-          ))
+          <>
+            <p className="text-muted-foreground mb-2">
+              Loading repositories...
+            </p>
+            {[...Array(8)].map((_, i) => (
+              <Skeleton className="h-[178px] w-full rounded-lg" key={i} />
+            ))}
+          </>
         ) : filteredRepos.length === 0 ? (
           <Empty>
             <EmptyHeader>
