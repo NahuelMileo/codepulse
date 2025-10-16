@@ -49,6 +49,10 @@ ${code}
 
     const result = JSON.parse(response.choices[0].message?.content || "{}");
 
+    if (!result.issues || result.issues.length === 0) {
+      result.score = 100;
+    }
+
     return new FileAnalysis(result.fileName, result.score, result.issues);
   }
 }
