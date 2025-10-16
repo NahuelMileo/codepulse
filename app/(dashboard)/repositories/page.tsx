@@ -12,6 +12,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { toast, Toaster } from "sonner";
 
 export interface Repo {
   id: number;
@@ -28,7 +29,7 @@ export interface Repo {
   updated_at: string;
   pushed_at: string;
   private: boolean;
-  homepage: string | null;
+  homepage: string;
   html_url: string;
   size: number;
   owner: {
@@ -39,7 +40,7 @@ export interface Repo {
 
 export default function Page() {
   const { data: session } = useSession();
-  const [repos, setRepos] = useState<Repo[]>([]);
+  const [repositories, setRepositories] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [, setError] = useState<string | null>(null);
@@ -47,30 +48,42 @@ export default function Page() {
   useEffect(() => {
     if (!session?.accessToken) {
       setError("Unauthorized, please login.");
+      toast("Unauthorized, please login.");
       return;
     }
 
     const fetchRepos = async () => {
       try {
         setLoading(true);
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+        if (!process.env.NEXT_PUBLIC_API_URL) {
+          console.warn("NEXT_PUBLIC_API_URL is not set");
+        }
+        const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+
         const res = await fetch(`${API_URL}/api/github/repos`);
-        if (!res.ok) throw new Error("Error fetching repositories");
+        if (!res.ok) {
+          const text = await res.text(); // opcional, para obtener mensaje del servidor
+          throw new Error(
+            `Error fetching repositories: ${res.status} ${res.statusText} - ${text}`,
+          );
+        }
         const data: Repo[] = await res.json();
-        setRepos(data);
+        setRepositories(data);
       } catch (err) {
         console.error("Error fetching repos:", err);
-        setError("No se pudieron cargar los repositorios");
+        setError("Failed to load repositories.");
+        toast("Failed to load repositories.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchRepos();
+    // fetch repositories whenever the user's accessToken changes
   }, [session]);
 
-  const filteredRepos = repos.filter((repo) =>
-    repo.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredRepos = repositories.filter((repository) =>
+    repository.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
