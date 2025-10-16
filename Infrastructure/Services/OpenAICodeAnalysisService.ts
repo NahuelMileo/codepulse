@@ -11,17 +11,25 @@ export class OpenAICodeAnalysisService implements ICodeAnalyzer {
 
   async analyzeCode(code: string): Promise<FileAnalysis> {
     const prompt = `
-You are a code analyzer. Analyze the following code EXACTLY as given.
-Provide a score (0-100) and list **ALL issues** found, including minor, medium, and major.
-Include:
+You are a professional and helpful code analyzer.
+Analyze the following code EXACTLY as given. Provide a score (0-100)
+Focus on issues that:
+- Could break functionality
+- Cause runtime errors
+- Affect performance significantly
+- Make maintenance difficult
+
+Ignore purely stylistic issues or minor aesthetic suggestions.
+
+For each issue, include:
 - line number
 - message
-- severity (low, medium, high)
+- severity (medium or high)
 - type
 - snippet of the code
 - suggested solution
 
-Do not omit any issues, even if they are minor.
+Do not include low severity styling-only issues in the main issues array.
 Return JSON in the format:
 
 {
@@ -31,11 +39,10 @@ Return JSON in the format:
     {
       "line": number,
       "message": "string",
-      "severity": "low" | "medium" | "high",
+      "severity": "medium" | "high",
       "type": "string",
-     "snippet": "string",
-     "solution": "string"
-    
+      "snippet": "string",
+      "solution": "string"
     }
   ]
 }

@@ -5,12 +5,23 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Folder, Loader2, FileCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CircleX, TriangleAlert, Lightbulb } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface RepoFile {
   name: string;
   path: string;
   type: "file" | "dir";
   html_url: string;
+}
+
+interface Issue {
+  line: number;
+  message: string;
+  severity: "medium" | "high";
+  type: string;
+  snippet: string;
+  solution: string;
 }
 
 export default function Page() {
@@ -25,6 +36,7 @@ export default function Page() {
   const [expandedFolders, setExpandedFolders] = useState<
     Record<string, RepoFile[] | null>
   >({});
+  const [issues, setIssues] = useState<Issue[]>([]);
 
   useEffect(() => {
     if (!session?.user?.name || !repoName || !session?.accessToken) return;
@@ -141,6 +153,7 @@ export default function Page() {
         body: JSON.stringify({ code }),
       });
       const result = await analysisRes.json();
+      setIssues(result.issues || []);
       console.log("✅ Resultado del análisis:", result);
     } catch (err) {
       console.error("❌ Error al analizar archivo:", err);
@@ -162,6 +175,57 @@ export default function Page() {
       >
         Analyze
       </Button>
+
+      <div className="mt-4">
+        {issues.map((issue: Issue, index: number) => {
+          function getSeverityColor(severity: string) {
+            switch (severity) {
+              case "high":
+                return "text-red-600 bg-red-50 border-red-200";
+              case "medium":
+                return "text-yellow-600 bg-yellow-50 border-yellow-200";
+              default:
+                return "text-gray-600 bg-gray-50 border-gray-200";
+            }
+          }
+
+          function getSeverityIcon(severity: string) {
+            switch (severity) {
+              case "high":
+                return <CircleX className="h-4 w-4" />;
+              case "medium":
+                return <TriangleAlert className="h-4 w-4" />;
+              default:
+                return null;
+            }
+          }
+
+          return (
+            <div
+              key={index}
+              className={`${getSeverityColor(issue.severity)} mb-4 flex flex-col gap-2 rounded-lg border p-4`}
+            >
+              <div className="flex flex-row items-start gap-2">
+                {getSeverityIcon(issue.severity)}
+                <div className="flex flex-col gap-2">
+                  <Badge variant={"outline"}>Line {issue.line}</Badge>
+                  <p className="text-sm font-semibold uppercase">
+                    {issue.type}
+                  </p>
+                  <p>{issue.message}</p>
+
+                  <pre className="my-2 rounded-md bg-white p-2">
+                    <code>{issue.snippet}</code>
+                  </pre>
+                  <p className="flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4" /> {issue.solution}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 
