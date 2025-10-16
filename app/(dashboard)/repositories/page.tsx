@@ -1,7 +1,7 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Folders, Search } from "lucide-react";
 import RepoCard from "@/components/ui/repo-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,20 +42,25 @@ export default function Page() {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredRepos, setFilteredRepos] = useState<Repo[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!session?.accessToken) return;
+    if (!session?.accessToken) {
+      setError("No autorizado. Por favor, inicia sesión de nuevo.");
+      return;
+    }
 
     const fetchRepos = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/github/repos");
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+        const res = await fetch(`${API_URL}/api/github/repos`);
         if (!res.ok) throw new Error("Error fetching repositories");
         const data: Repo[] = await res.json();
         setRepos(data);
       } catch (err) {
         console.error("Error fetching repos:", err);
+        setError("No se pudieron cargar los repositorios");
       } finally {
         setLoading(false);
       }
@@ -64,13 +69,13 @@ export default function Page() {
     fetchRepos();
   }, [session]);
 
-  useEffect(() => {
-    setFilteredRepos(
+  const filteredRepos = useMemo(
+    () =>
       repos.filter((repo) =>
         repo.name.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
-    );
-  }, [repos, searchQuery]);
+    [repos, searchQuery],
+  );
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-2 p-6">
@@ -82,7 +87,7 @@ export default function Page() {
       <div className="relative">
         <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <Input
-          type="text"
+          type="search"
           placeholder="Search repositories..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

@@ -11,12 +11,18 @@ export class OpenAICodeAnalysisService implements ICodeAnalyzer {
 
   async analyzeCode(code: string): Promise<FileAnalysis> {
     const prompt = `
-You are a professional code analyzer.
-Analyze the code EXACTLY as given.
-Provide:
-- A score from 0 to 100
-- Any issues found, with correct line numbers as per the text provided
-- Return JSON in the exact format below:
+You are a code analyzer. Analyze the following code EXACTLY as given.
+Provide a score (0-100) and list **ALL issues** found, including minor, medium, and major.
+Include:
+- line number
+- message
+- severity (low, medium, high)
+- type
+- snippet of the code
+- suggested solution
+
+Do not omit any issues, even if they are minor.
+Return JSON in the format:
 
 {
   "fileName": "string",

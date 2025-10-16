@@ -135,7 +135,6 @@ export default function Page() {
         .split("\n")
         .map((line, index) => `${index + 1}|${line}`)
         .join("\n");
-      console.log("📄 Código del archivo:", code);
       const analysisRes = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
