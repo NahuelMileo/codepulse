@@ -130,6 +130,7 @@ export default function Page() {
 
   async function analyze(file: RepoFile) {
     if (!selectedFile) return;
+    setIssues([]);
 
     try {
       const res = await fetch(
@@ -166,65 +167,75 @@ export default function Page() {
       <p className="text-muted-foreground mb-4">
         Selected file : {selectedFile?.name}
       </p>
-      <div className="rounded border">{renderFiles(files)}</div>
-      <Button
-        className="mt-4"
-        variant={"accent"}
-        onClick={() => selectedFile && analyze(selectedFile)}
-        disabled={!selectedFile}
-      >
-        Analyze
-      </Button>
+      <div className="flex flex-row justify-between gap-8">
+        <div>
+          <div className="h-[600px] w-[450px] overflow-auto rounded-lg border p-6">
+            <h2 className="mb-4 text-xl font-semibold">Repository files</h2>
+            {renderFiles(files)}
+          </div>
+          <Button
+            className="mt-4"
+            variant={"accent"}
+            onClick={() => selectedFile && analyze(selectedFile)}
+            disabled={!selectedFile}
+          >
+            Analyze
+          </Button>
+        </div>
 
-      <div className="mt-4">
-        {issues.map((issue: Issue, index: number) => {
-          function getSeverityColor(severity: string) {
-            switch (severity) {
-              case "high":
-                return "text-red-600 bg-red-50 border-red-200";
-              case "medium":
-                return "text-yellow-600 bg-yellow-50 border-yellow-200";
-              default:
-                return "text-gray-600 bg-gray-50 border-gray-200";
-            }
-          }
+        <div className="w-[900px] rounded-lg border p-6">
+          <h2 className="mb-6 text-xl font-semibold">File analysis</h2>
+          <div className="flex flex-col gap-4">
+            {issues.map((issue: Issue, index: number) => {
+              function getSeverityColor(severity: string) {
+                switch (severity) {
+                  case "high":
+                    return "text-red-600 bg-red-50 border-red-200";
+                  case "medium":
+                    return "text-yellow-600 bg-yellow-50 border-yellow-200";
+                  default:
+                    return "text-gray-600 bg-gray-50 border-gray-200";
+                }
+              }
 
-          function getSeverityIcon(severity: string) {
-            switch (severity) {
-              case "high":
-                return <CircleX className="h-4 w-4" />;
-              case "medium":
-                return <TriangleAlert className="h-4 w-4" />;
-              default:
-                return null;
-            }
-          }
+              function getSeverityIcon(severity: string) {
+                switch (severity) {
+                  case "high":
+                    return <CircleX className="h-4 w-4" />;
+                  case "medium":
+                    return <TriangleAlert className="h-4 w-4" />;
+                  default:
+                    return null;
+                }
+              }
 
-          return (
-            <div
-              key={index}
-              className={`${getSeverityColor(issue.severity)} mb-4 flex flex-col gap-2 rounded-lg border p-4`}
-            >
-              <div className="flex flex-row items-start gap-2">
-                {getSeverityIcon(issue.severity)}
-                <div className="flex flex-col gap-2">
-                  <Badge variant={"outline"}>Line {issue.line}</Badge>
-                  <p className="text-sm font-semibold uppercase">
-                    {issue.type}
-                  </p>
-                  <p>{issue.message}</p>
+              return (
+                <div
+                  key={index}
+                  className={`${getSeverityColor(issue.severity)} mb-4 flex flex-col gap-2 rounded-lg border p-4 px-8`}
+                >
+                  <div className="flex flex-row items-start gap-2">
+                    {getSeverityIcon(issue.severity)}
+                    <div className="flex flex-col gap-1">
+                      <Badge variant={"outline"}>Line {issue.line}</Badge>
+                      <p className="text-sm font-semibold uppercase">
+                        {issue.type}
+                      </p>
+                      <p className="text-sm">{issue.message}</p>
 
-                  <pre className="my-2 rounded-md bg-white p-2">
-                    <code>{issue.snippet}</code>
-                  </pre>
-                  <p className="flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4" /> {issue.solution}
-                  </p>
+                      <pre className="my-2 rounded-md bg-white p-2 text-sm">
+                        <code>{issue.snippet}</code>
+                      </pre>
+                      <p className="flex items-center gap-2 text-sm">
+                        <Lightbulb className="h-4 w-4" /> {issue.solution}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

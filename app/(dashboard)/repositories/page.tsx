@@ -1,7 +1,7 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Folders, Search } from "lucide-react";
 import RepoCard from "@/components/ui/repo-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -56,22 +56,18 @@ export default function Page() {
       try {
         setLoading(true);
         const API_URL = process.env.NEXT_PUBLIC_API_URL!;
-        if (!process.env.NEXT_PUBLIC_API_URL) {
-          console.error(
-            "❌ NEXT_PUBLIC_API_URL is not set in the environment variables.",
-          );
-          throw new Error(
-            "Missing API URL. Please configure NEXT_PUBLIC_API_URL in your environment.",
-          );
+        if (!API_URL) {
+          throw new Error("Missing NEXT_PUBLIC_API_URL environment variable.");
         }
 
         const res = await fetch(`${API_URL}/api/github/repos`);
         if (!res.ok) {
-          const text = await res.text(); // opcional, para obtener mensaje del servidor
+          const text = await res.text();
           throw new Error(
             `Error fetching repositories: ${res.status} ${res.statusText} - ${text}`,
           );
         }
+
         const data: Repo[] = await res.json();
         setRepositories(data);
       } catch (err) {
@@ -84,7 +80,6 @@ export default function Page() {
     };
 
     fetchRepos();
-    // fetch repositories whenever the user's accessToken changes
   }, [session?.accessToken]);
 
   const filteredRepos = repositories.filter((repository) =>
@@ -110,18 +105,15 @@ export default function Page() {
           className="pl-10"
         />
       </div>
+
       <div
-        className={`mt-2 grid ${
-          loading
-            ? "grid-cols-2"
-            : filteredRepos.length !== 0
-              ? "grid-cols-2"
-              : "grid-cols-1"
+        className={`mt-4 grid ${
+          loading || filteredRepos.length ? "grid-cols-2" : "grid-cols-1"
         } items-center gap-4`}
       >
         {loading ? (
           <>
-            <p className="text-muted-foreground mb-2">
+            <p className="text-muted-foreground col-span-2 text-center">
               Loading repositories...
             </p>
             {[...Array(8)].map((_, i) => (

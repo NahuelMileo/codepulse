@@ -10,11 +10,12 @@ import {
 import { FolderGit2, Lock, Globe, Eye } from "lucide-react";
 import { Button } from "./button";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function RepoCard({ repo }: { repo: Repo }) {
   const isPrivate = repo.private;
   const language = repo.language || "Unknown";
-
+  const [loading, setLoading] = useState(false);
   return (
     <Card className="transition-shadow hover:shadow-md">
       <CardHeader>
@@ -46,9 +47,14 @@ export default function RepoCard({ repo }: { repo: Repo }) {
       </CardContent>
 
       <CardFooter>
-        <Link href={`/repositories/${repo.name}`}>
+        <Link
+          href={`/repositories/${repo.name}`}
+          prefetch
+          onClick={() => setLoading(true)}
+        >
           <Button variant={"accent"}>
-            <Eye></Eye>See details
+            <Eye></Eye>
+            {loading ? "Loading..." : "See details"}
           </Button>
         </Link>
       </CardFooter>
