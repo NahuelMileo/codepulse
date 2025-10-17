@@ -4,6 +4,6 @@ export class AnalyzeCodeUseCase {
   constructor(private codeAnalyzer: ICodeAnalyzer) {}
 
   async execute(fileName: string, content: string) {
-    return this.codeAnalyzer.analyzeCode(content);
+    return this.codeAnalyzer.analyzeCode(fileName, content);
   }
 }
