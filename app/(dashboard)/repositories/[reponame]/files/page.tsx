@@ -41,32 +41,6 @@ function getFileIcon(fileName: string) {
   return <File className="h-4 w-4 text-gray-400" />;
 }
 
-function getSeverityColor(severity: string) {
-  switch (severity) {
-    case "high":
-      return "text-red-600 bg-red-50 border-red-200";
-    case "medium":
-      return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    case "low":
-      return "text-blue-600 bg-blue-50 border-blue-200";
-    default:
-      return "text-gray-600 bg-gray-50 border-gray-200";
-  }
-}
-
-function getSeverityIcon(severity: string) {
-  switch (severity) {
-    case "high":
-      return <XCircle className="h-4 w-4" />;
-    case "medium":
-      return <AlertTriangle className="h-4 w-4" />;
-    case "low":
-      return <Info className="h-4 w-4" />;
-    default:
-      return <AlertCircle className="h-4 w-4" />;
-  }
-}
-
 export default function Page() {
   const { data: session } = useSession();
   const [files, setFiles] = useState<RepositoryFile[]>([]);

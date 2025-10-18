@@ -4,7 +4,7 @@ export class FileAnalysis {
   issues: {
     line: number;
     message: string;
-    severity: "low" | "medium" | "high";
+    severity: "medium" | "high";
     type: string;
     snippet: string;
     solution: string;
@@ -16,7 +16,7 @@ export class FileAnalysis {
     issues: {
       line: number;
       message: string;
-      severity: "low" | "medium" | "high";
+      severity: "medium" | "high";
       type: string;
       snippet: string;
       solution: string;

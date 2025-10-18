@@ -48,7 +48,7 @@ export default function Page() {
   useEffect(() => {
     if (!session?.accessToken || !session.user?.name) return;
     analyzeFile(repoName, filePath);
-  }, [repoName, filePath]);
+  }, []);
 
   async function analyzeFile(repo: string, file: string) {
     setAnalyzing(true);
