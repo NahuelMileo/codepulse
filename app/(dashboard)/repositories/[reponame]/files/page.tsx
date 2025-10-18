@@ -1,46 +1,92 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Folder, Loader2, FileCode } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import {
+  Folder,
+  Loader2,
+  FileCode,
+  File,
+  FileJson,
+  FileText,
+  Search,
+  AlertCircle,
+  XCircle,
+  AlertTriangle,
+  Info,
+  ChevronRight,
+  ChevronDown,
+  Activity,
+} from "lucide-react";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { CircleX, TriangleAlert, Lightbulb } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import RepositoryFile from "@/types/RepositoryFile";
+import AnalysisResult from "@/types/AnalysisResult";
 
-interface RepoFile {
-  name: string;
-  path: string;
-  type: "file" | "dir";
-  html_url: string;
+function getFileIcon(fileName: string) {
+  if (fileName.endsWith(".tsx") || fileName.endsWith(".ts")) {
+    return <FileCode className="h-4 w-4 text-blue-500" />;
+  }
+  if (fileName.endsWith(".json")) {
+    return <FileJson className="h-4 w-4 text-yellow-500" />;
+  }
+  if (fileName.endsWith(".md")) {
+    return <FileText className="h-4 w-4 text-gray-500" />;
+  }
+  if (fileName.endsWith(".js")) {
+    return <FileCode className="h-4 w-4 text-yellow-500" />;
+  }
+  return <File className="h-4 w-4 text-gray-400" />;
 }
 
-interface Issue {
-  line: number;
-  message: string;
-  severity: "medium" | "high";
-  type: string;
-  snippet: string;
-  solution: string;
+function getSeverityColor(severity: string) {
+  switch (severity) {
+    case "high":
+      return "text-red-600 bg-red-50 border-red-200";
+    case "medium":
+      return "text-yellow-600 bg-yellow-50 border-yellow-200";
+    case "low":
+      return "text-blue-600 bg-blue-50 border-blue-200";
+    default:
+      return "text-gray-600 bg-gray-50 border-gray-200";
+  }
+}
+
+function getSeverityIcon(severity: string) {
+  switch (severity) {
+    case "high":
+      return <XCircle className="h-4 w-4" />;
+    case "medium":
+      return <AlertTriangle className="h-4 w-4" />;
+    case "low":
+      return <Info className="h-4 w-4" />;
+    default:
+      return <AlertCircle className="h-4 w-4" />;
+  }
 }
 
 export default function Page() {
   const { data: session } = useSession();
+  const [files, setFiles] = useState<RepositoryFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<RepositoryFile | null>(null);
+  const [expandedFolders, setExpandedFolders] = useState<
+    Record<string, RepositoryFile[] | null>
+  >({});
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
+  const [analyzing, setAnalyzing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const params = useParams();
   const repoName = params.reponame as string;
 
-  const [files, setFiles] = useState<RepoFile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<RepoFile | null>(null);
-  const [expandedFolders, setExpandedFolders] = useState<
-    Record<string, RepoFile[] | null>
-  >({});
-  const [issues, setIssues] = useState<Issue[]>([]);
-
   useEffect(() => {
     if (!session?.user?.name || !repoName || !session?.accessToken) return;
-
     getFiles(session.user.name, repoName, "", session.accessToken)
       .then((files) => {
         setFiles(files);
@@ -71,19 +117,7 @@ export default function Page() {
     return res.json();
   }
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center p-10 text-gray-500">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-        Cargando archivos...
-      </div>
-    );
-
-  if (error)
-    return <div className="p-4 text-sm text-red-500">Error: {error}</div>;
-
   async function handleExpand(path: string) {
-    // Si ya está expandida, la cerramos
     if (expandedFolders[path] !== undefined) {
       setExpandedFolders((prev) => {
         const copy = { ...prev };
@@ -93,7 +127,6 @@ export default function Page() {
       return;
     }
 
-    // Inicializamos como null para mostrar loading
     setExpandedFolders((prev) => ({ ...prev, [path]: null }));
 
     try {
@@ -106,7 +139,7 @@ export default function Page() {
           },
         },
       );
-      const data: RepoFile[] = await res.json();
+      const data: RepositoryFile[] = await res.json();
       setExpandedFolders((prev) => ({ ...prev, [path]: data }));
     } catch (err) {
       console.error("Error al cargar carpeta", err);
@@ -118,19 +151,25 @@ export default function Page() {
     }
   }
 
-  function handleSelectFile(file: RepoFile) {
+  function handleSelectFile(file: RepositoryFile) {
+    if (selectedFile?.path === file.path) {
+      setSelectedFile(null);
+      setAnalysisResult(null);
+      return;
+    }
+
     if (file.type === "dir") {
-      // Si es un directorio, expandirlo
       handleExpand(file.path);
     } else {
-      // Si es un archivo, seleccionarlo
       setSelectedFile(file);
+      setAnalysisResult(null);
+      analyzeFile(file);
     }
   }
 
-  async function analyze(file: RepoFile) {
-    if (!selectedFile) return;
-    setIssues([]);
+  async function analyzeFile(file: RepositoryFile) {
+    setAnalyzing(true);
+    setAnalysisResult(null);
 
     try {
       const res = await fetch(
@@ -138,7 +177,7 @@ export default function Page() {
         {
           headers: {
             Authorization: `Bearer ${session!.accessToken}`,
-            Accept: "application/vnd.github.v3.raw", // esto devuelve texto plano en lugar de base64
+            Accept: "application/vnd.github.v3.raw",
           },
         },
       );
@@ -148,126 +187,196 @@ export default function Page() {
         .split("\n")
         .map((line, index) => `${index + 1}|${line}`)
         .join("\n");
+
       const analysisRes = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
       });
+
       const result = await analysisRes.json();
-      setIssues(result.issues || []);
-      console.log("✅ Resultado del análisis:", result);
+      setAnalysisResult({
+        fileName: file.name,
+        score: result.score || 85,
+        issues: result.issues || [],
+      });
     } catch (err) {
-      console.error("❌ Error al analizar archivo:", err);
+      console.error("Error al analizar archivo:", err);
+      setError("Error al analizar el archivo");
+    } finally {
+      setAnalyzing(false);
     }
   }
 
+  function renderFiles(fileList: RepositoryFile[], level = 0) {
+    return fileList
+      .filter((f) => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .map((file) => {
+        const isDir = file.type === "dir";
+        const isExpanded = expandedFolders[file.path] !== undefined;
+        const isSelected = selectedFile?.path === file.path;
+
+        return (
+          <div key={file.path}>
+            <div
+              className={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-all ${
+                isSelected
+                  ? "bg-accent/20 ring-accent ring-2 ring-inset"
+                  : "hover:bg-accent/10"
+              }`}
+              style={{ paddingLeft: `${level * 16 + 12}px` }}
+              onClick={() => handleSelectFile(file)}
+            >
+              {isDir && (
+                <span className="flex-shrink-0">
+                  {isExpanded ? (
+                    <ChevronDown className="text-muted-foreground h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="text-muted-foreground h-4 w-4" />
+                  )}
+                </span>
+              )}
+              {isDir ? (
+                <Folder className="text-accent h-4 w-4" />
+              ) : (
+                getFileIcon(file.name)
+              )}
+              <span className="text-foreground flex-1 truncate">
+                {file.name}
+              </span>
+            </div>
+
+            {isDir && expandedFolders[file.path] !== undefined && (
+              <div>
+                {expandedFolders[file.path] === null ? (
+                  <div
+                    className="text-muted-foreground flex items-center gap-2 py-2 text-sm"
+                    style={{ paddingLeft: `${(level + 1) * 16 + 12}px` }}
+                  >
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Loading...
+                  </div>
+                ) : (
+                  renderFiles(expandedFolders[file.path]!, level + 1)
+                )}
+              </div>
+            )}
+          </div>
+        );
+      });
+  }
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center p-10 text-gray-500">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+        Loading files...
+      </div>
+    );
+
+  if (error)
+    return (
+      <Card className="p-6">
+        <div className="flex items-center gap-3 text-red-600">
+          <XCircle className="h-5 w-5" />
+          <p className="text-sm">Error: {error}</p>
+        </div>
+      </Card>
+    );
+
   return (
-    <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-2 text-2xl font-semibold">Archivos de {repoName}</h1>
-      <p className="text-muted-foreground mb-4">
-        Selected file : {selectedFile?.name}
-      </p>
-      <div className="flex flex-row justify-between gap-8">
-        <div>
-          <div className="h-[600px] w-[450px] overflow-auto rounded-lg border p-6">
-            <h2 className="mb-4 text-xl font-semibold">Repository files</h2>
+    <div className="mx-auto max-w-7xl space-y-8 p-6">
+      {/* Header */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-foreground flex items-center gap-2 text-2xl font-semibold">
+              <Folder className="h-6 w-6 text-teal-500" />
+              {repoName}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {files.length} files in {repoName}
+            </p>
+          </div>
+        </div>
+        <div className="bg-border h-px w-full" />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* LISTA DE ARCHIVOS */}
+        <Card className="border-border/40 bg-background/50 flex flex-col border p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-foreground flex items-center gap-2 text-lg font-semibold">
+              <FileCode className="h-5 w-5 text-teal-500" />
+              File structure
+            </h2>
+          </div>
+
+          <div className="max-h-[600px] space-y-1 overflow-y-auto pr-1">
             {renderFiles(files)}
           </div>
-          <Button
-            className="mt-4"
-            variant={"accent"}
-            onClick={() => selectedFile && analyze(selectedFile)}
-            disabled={!selectedFile}
-          >
-            Analyze
-          </Button>
-        </div>
+        </Card>
 
-        <div className="w-[900px] rounded-lg border p-6">
-          <h2 className="mb-6 text-xl font-semibold">File analysis</h2>
-          <div className="flex flex-col gap-4">
-            {issues.map((issue: Issue, index: number) => {
-              function getSeverityColor(severity: string) {
-                switch (severity) {
-                  case "high":
-                    return "text-red-600 bg-red-50 border-red-200";
-                  case "medium":
-                    return "text-yellow-600 bg-yellow-50 border-yellow-200";
-                  default:
-                    return "text-gray-600 bg-gray-50 border-gray-200";
-                }
-              }
+        {/* PANEL DE ANÁLISIS */}
+        <Card className="relative flex flex-col items-center justify-center overflow-hidden border-teal-500/20 bg-teal-500/10 p-10 shadow-sm transition-all">
+          {/* Círculo decorativo */}
+          <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.08),transparent_70%)]" />
 
-              function getSeverityIcon(severity: string) {
-                switch (severity) {
-                  case "high":
-                    return <CircleX className="h-4 w-4" />;
-                  case "medium":
-                    return <TriangleAlert className="h-4 w-4" />;
-                  default:
-                    return null;
-                }
-              }
-
-              return (
-                <div
-                  key={index}
-                  className={`${getSeverityColor(issue.severity)} mb-4 flex flex-col gap-2 rounded-lg border p-4 px-8`}
-                >
-                  <div className="flex flex-row items-start gap-2">
-                    {getSeverityIcon(issue.severity)}
-                    <div className="flex flex-col gap-1">
-                      <Badge variant={"outline"}>Line {issue.line}</Badge>
-                      <p className="text-sm font-semibold uppercase">
-                        {issue.type}
-                      </p>
-                      <p className="text-sm">{issue.message}</p>
-
-                      <pre className="my-2 rounded-md bg-white p-2 text-sm">
-                        <code>{issue.snippet}</code>
-                      </pre>
-                      <p className="flex items-center gap-2 text-sm">
-                        <Lightbulb className="h-4 w-4" /> {issue.solution}
-                      </p>
-                    </div>
-                  </div>
+          {/* Contenido */}
+          <div className="relative z-10 flex flex-col items-center text-center">
+            {selectedFile ? (
+              <>
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-teal-500/15 ring-4 ring-teal-500/10">
+                  <FileCode className="h-7 w-7 text-teal-500" />
                 </div>
-              );
-            })}
+                <h2 className="text-foreground mb-2 text-2xl font-semibold">
+                  {selectedFile.name}
+                </h2>
+                <p className="text-muted-foreground mb-6 max-w-sm text-sm">
+                  Selected file ready for analysis. Click below to proceed with
+                  detailed analysis.
+                </p>
+                <Button
+                  asChild
+                  className="gap-2 bg-teal-500 text-white transition-all hover:bg-teal-600"
+                  onClick={() => setLoadingAnalysis(true)}
+                >
+                  <Link
+                    href={`/repositories/${repoName}/files/${encodeURIComponent(selectedFile.path)}`}
+                    prefetch
+                    className="flex items-center gap-2"
+                  >
+                    {loadingAnalysis ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+                      </>
+                    ) : (
+                      <>
+                        <Activity className="h-4 w-4" />
+                        Analyze file
+                      </>
+                    )}
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-teal-500/15 ring-4 ring-teal-500/10">
+                  <Search className="h-7 w-7 text-teal-500" />
+                </div>
+                <h2 className="text-foreground mb-2 text-2xl font-semibold">
+                  Select a file
+                </h2>
+                <p className="text-muted-foreground mb-6 max-w-sm text-sm">
+                  Explore the repository structure and choose a file to start
+                  the analysis.
+                </p>
+                <div className="min-h-[36px]" />
+              </>
+            )}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
-
-  function renderFiles(files: RepoFile[], level = 0) {
-    return files.map((file) => {
-      const isDir = file.type === "dir";
-      const Icon = isDir ? Folder : FileCode;
-
-      return (
-        <div key={file.path} className={`pl-${level * 4}`}>
-          <div
-            className="flex cursor-pointer items-center gap-2 p-2 hover:bg-teal-50"
-            onClick={() => handleSelectFile(file)}
-          >
-            <Icon
-              className={`h-4 w-4 ${isDir ? "text-amber-500" : "text-teal-500"}`}
-            />
-            {file.name}
-          </div>
-
-          {isDir && expandedFolders[file.path] !== undefined && (
-            <div className="ml-4 border-l">
-              {expandedFolders[file.path] === null ? (
-                <div className="pl-2 text-sm text-gray-500">Cargando...</div>
-              ) : (
-                renderFiles(expandedFolders[file.path]!, level + 1)
-              )}
-            </div>
-          )}
-        </div>
-      );
-    });
-  }
 }

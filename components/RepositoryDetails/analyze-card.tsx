@@ -1,4 +1,4 @@
-import { PlayCircle } from "lucide-react";
+import { Loader2, PlayCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Repo } from "@/app/(dashboard)/repositories/page";
@@ -24,6 +24,7 @@ export default function Page({ repo }: { repo: Repo }) {
           </p>
           <div className="mt-8 flex gap-3">
             <Button
+              asChild
               size="lg"
               className="gap-2"
               variant={"accent"}
@@ -34,8 +35,17 @@ export default function Page({ repo }: { repo: Repo }) {
                 prefetch
                 className="flex items-center gap-2"
               >
-                <PlayCircle className="h-5 w-5" />
-                {loading ? "Loading..." : "See files"}
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <PlayCircle className="h-5 w-5" />
+                    {loading ? "Loading..." : "See files"}
+                  </>
+                )}
               </Link>
             </Button>
           </div>
