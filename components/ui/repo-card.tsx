@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./card";
-import { FolderGit2, Lock, Globe, Eye } from "lucide-react";
+import { FolderGit2, Lock, Globe, Eye, Loader2 } from "lucide-react";
 import { Button } from "./button";
 import Link from "next/link";
 import { useState } from "react";
@@ -47,16 +47,25 @@ export default function RepoCard({ repo }: { repo: Repo }) {
       </CardContent>
 
       <CardFooter>
-        <Link
-          href={`/repositories/${repo.name}`}
-          prefetch
-          onClick={() => setLoading(true)}
-        >
-          <Button variant={"accent"}>
-            <Eye></Eye>
-            {loading ? "Loading..." : "See details"}
-          </Button>
-        </Link>
+        <Button variant={"accent"} asChild onClick={() => setLoading(true)}>
+          <Link
+            href={`/repositories/${repo.name}`}
+            prefetch
+            onClick={() => setLoading(true)}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <Eye></Eye>
+                See details
+              </>
+            )}
+          </Link>
+        </Button>
       </CardFooter>
     </Card>
   );
