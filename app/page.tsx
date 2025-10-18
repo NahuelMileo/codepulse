@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import GitHubIcon from "@/components/ui/GitHubIcon";
 import { Loader2 } from "lucide-react";
-import Github from "next-auth/providers/github";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

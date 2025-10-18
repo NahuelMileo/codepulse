@@ -37,7 +37,6 @@ export default function Page() {
   const repoName = params.reponame as string;
   const filePath = decodeURIComponent(params.file as string);
   const fileName = filePath.split("/").pop() as string;
-  //   console.log(filePath);
 
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null,
@@ -48,7 +47,7 @@ export default function Page() {
   useEffect(() => {
     if (!session?.accessToken || !session.user?.name) return;
     analyzeFile(repoName, filePath);
-  }, []);
+  });
 
   async function analyzeFile(repo: string, file: string) {
     setAnalyzing(true);
