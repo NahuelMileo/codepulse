@@ -1,63 +1,18 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { Folders, Search } from "lucide-react";
-import RepoCard from "@/components/ui/repo-card";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { toast } from "sonner";
-import Repository from "@/types/Repository";
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { useUserRepositories } from "@/hooks/useUserRepositories";
+import RepositoryList from "@/components/Repositories/repository-list";
 
 export default function Page() {
   const { data: session } = useSession();
-  const [repositories, setRepositories] = useState<Repository[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!session?.accessToken) {
-      setError("Unauthorized, please login.");
-      toast("Unauthorized, please login.");
-      return;
-    }
-
-    const fetchRepos = async () => {
-      try {
-        setLoading(true);
-        const API_URL = process.env.NEXT_PUBLIC_API_URL!;
-        if (!API_URL) {
-          throw new Error("Missing NEXT_PUBLIC_API_URL environment variable.");
-        }
-
-        const res = await fetch(`${API_URL}/api/github/repos`);
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(
-            `Error fetching repositories: ${res.status} ${res.statusText} - ${text}`,
-          );
-        }
-
-        const data: Repository[] = await res.json();
-        setRepositories(data);
-      } catch (err) {
-        console.error("Error fetching repositories:", err);
-        setError(err instanceof Error ? err.message : "Unknown error");
-        toast("Failed to load repositories.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRepos();
-  }, [session?.accessToken]);
+  const { repositories, loading, error } = useUserRepositories(
+    session?.accessToken,
+  );
 
   const filteredRepos = repositories.filter((repository) =>
     repository.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -88,28 +43,7 @@ export default function Page() {
           loading || filteredRepos.length ? "grid-cols-2" : "grid-cols-1"
         } items-center gap-4`}
       >
-        {loading ? (
-          <>
-            <p className="text-muted-foreground col-span-2 text-center">
-              Loading repositories...
-            </p>
-            {[...Array(8)].map((_, i) => (
-              <Skeleton className="h-[178px] w-full rounded-lg" key={i} />
-            ))}
-          </>
-        ) : filteredRepos.length === 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <Folders />
-              </EmptyMedia>
-              <EmptyTitle>No repositories</EmptyTitle>
-              <EmptyDescription>No repositories found</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : (
-          filteredRepos.map((repo) => <RepoCard key={repo.id} repo={repo} />)
-        )}
+        <RepositoryList loading={loading} repositories={filteredRepos} />
       </div>
     </div>
   );
