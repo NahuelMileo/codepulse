@@ -20,7 +20,6 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import RepositoryFile from "@/types/RepositoryFile";
-import AnalysisResult from "@/types/AnalysisResult";
 
 function getFileIcon(fileName: string) {
   if (fileName.endsWith(".tsx") || fileName.endsWith(".ts")) {

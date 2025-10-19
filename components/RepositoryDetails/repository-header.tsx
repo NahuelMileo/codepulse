@@ -2,10 +2,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
 import { Globe, ArrowLeft, ExternalLink, Lock } from "lucide-react";
 import router from "next/router";
 import { Button } from "../ui/button";
-import { Repo } from "@/app/(dashboard)/repositories/page";
 import { Badge } from "../ui/badge";
+import Repository from "@/types/Repository";
 
-export default function Page({ repo }: { repo: Repo }) {
+export default function Page({ repo }: { repo: Repository }) {
   return (
     <div className="flex items-start justify-between">
       <div className="flex items-start gap-4">

@@ -13,34 +13,11 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { toast } from "sonner";
-
-export interface Repo {
-  id: number;
-  description: string | null;
-  language: string | null;
-  name: string;
-  full_name: string;
-  stargazers_count: number;
-  forks_count: number;
-  watchers_count: number;
-  open_issues_count: number;
-  default_branch: string;
-  created_at: string;
-  updated_at: string;
-  pushed_at: string;
-  private: boolean;
-  homepage: string;
-  html_url: string;
-  size: number;
-  owner: {
-    login: string;
-    avatar_url: string;
-  };
-}
+import Repository from "@/types/Repository";
 
 export default function Page() {
   const { data: session } = useSession();
-  const [repositories, setRepositories] = useState<Repo[]>([]);
+  const [repositories, setRepositories] = useState<Repository[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +45,7 @@ export default function Page() {
           );
         }
 
-        const data: Repo[] = await res.json();
+        const data: Repository[] = await res.json();
         setRepositories(data);
       } catch (err) {
         console.error("Error fetching repositories:", err);

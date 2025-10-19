@@ -1,11 +1,11 @@
 import { Loader2, PlayCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import { Repo } from "@/app/(dashboard)/repositories/page";
 import Link from "next/link";
 import { useState } from "react";
+import Repository from "@/types/Repository";
 
-export default function Page({ repo }: { repo: Repo }) {
+export default function Page({ repo }: { repo: Repository }) {
   const [loading, setLoading] = useState(false);
   return (
     <>

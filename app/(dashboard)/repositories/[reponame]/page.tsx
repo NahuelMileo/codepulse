@@ -1,13 +1,13 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { Repo } from "../page";
 import AnalyzeCard from "@/components/RepositoryDetails/analyze-card";
 import RepositoryHeader from "@/components/RepositoryDetails/repository-header";
 import RepositoryDescription from "@/components/RepositoryDetails/repository-description";
 import RepositoryStats from "@/components/RepositoryDetails/repository-stats";
 import RepositoryActivity from "@/components/RepositoryDetails/repository-activity";
 import RepositorySkeleton from "@/components/RepositoryDetails/repository-skeleton";
+import Repository from "@/types/Repository";
 
 interface RepoDetailsPageProps {
   params: Promise<{ reponame: string }>;
@@ -16,12 +16,12 @@ interface RepoDetailsPageProps {
 export default function RepoDetailsPage({ params }: RepoDetailsPageProps) {
   const [loading, setLoading] = useState(true);
   const { reponame } = use(params);
-  const [repo, setRepo] = useState<Repo | null>(null);
+  const [repo, setRepo] = useState<Repository | null>(null);
 
   useEffect(() => {
     fetch("/api/github/repos")
       .then((res) => res.json())
-      .then((data: Repo[]) => {
+      .then((data: Repository[]) => {
         const found = data.find((r) => r.name === reponame);
         setRepo(found || null);
         setLoading(false);

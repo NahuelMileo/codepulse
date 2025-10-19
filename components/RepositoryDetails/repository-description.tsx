@@ -1,7 +1,7 @@
-import { Repo } from "@/app/(dashboard)/repositories/page";
+import Repository from "@/types/Repository";
 import { Card } from "../ui/card";
 
-export default function Page({ repo }: { repo: Repo }) {
+export default function Page({ repo }: { repo: Repository }) {
   return (
     <>
       {repo.description ? (

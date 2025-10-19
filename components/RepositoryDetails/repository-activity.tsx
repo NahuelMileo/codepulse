@@ -1,4 +1,3 @@
-import { Repo } from "@/app/(dashboard)/repositories/page";
 import { Card } from "../ui/card";
 import {
   Calendar,
@@ -11,6 +10,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
 import { Badge } from "../ui/badge";
+import Repository from "@/types/Repository";
 
 function getTimeAgo(dateString: string) {
   const date = new Date(dateString);
@@ -35,7 +35,7 @@ function formatDate(dateString: string) {
   });
 }
 
-export default function Page({ repo }: { repo: Repo }) {
+export default function Page({ repo }: { repo: Repository }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card className="p-6">

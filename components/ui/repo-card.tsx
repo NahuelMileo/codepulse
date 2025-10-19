@@ -1,4 +1,3 @@
-import { Repo } from "@/app/(dashboard)/repositories/page";
 import {
   Card,
   CardContent,
@@ -11,8 +10,9 @@ import { FolderGit2, Lock, Globe, Eye, Loader2 } from "lucide-react";
 import { Button } from "./button";
 import Link from "next/link";
 import { useState } from "react";
+import Repository from "@/types/Repository";
 
-export default function RepoCard({ repo }: { repo: Repo }) {
+export default function RepoCard({ repo }: { repo: Repository }) {
   const isPrivate = repo.private;
   const language = repo.language || "Unknown";
   const [loading, setLoading] = useState(false);

@@ -1,8 +1,8 @@
 import { Star, GitFork, Eye, AlertCircle, HardDrive } from "lucide-react";
 import { Card } from "../ui/card";
-import { Repo } from "@/app/(dashboard)/repositories/page";
+import Repository from "@/types/Repository";
 
-export default function Page({ repo }: { repo: Repo }) {
+export default function Page({ repo }: { repo: Repository }) {
   const stats = [
     {
       icon: Star,
