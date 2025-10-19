@@ -11,10 +11,7 @@ import {
   FileJson,
   FileText,
   Search,
-  AlertCircle,
   XCircle,
-  AlertTriangle,
-  Info,
   ChevronRight,
   ChevronDown,
   Activity,
@@ -51,11 +48,6 @@ export default function Page() {
   const [expandedFolders, setExpandedFolders] = useState<
     Record<string, RepositoryFile[] | null>
   >({});
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
-    null,
-  );
-  const [analyzing, setAnalyzing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const params = useParams();
   const repoName = params.reponame as string;
 
@@ -128,7 +120,6 @@ export default function Page() {
   function handleSelectFile(file: RepositoryFile) {
     if (selectedFile?.path === file.path) {
       setSelectedFile(null);
-      setAnalysisResult(null);
       return;
     }
 
@@ -136,108 +127,61 @@ export default function Page() {
       handleExpand(file.path);
     } else {
       setSelectedFile(file);
-      setAnalysisResult(null);
-      analyzeFile(file);
-    }
-  }
-
-  async function analyzeFile(file: RepositoryFile) {
-    setAnalyzing(true);
-    setAnalysisResult(null);
-
-    try {
-      const res = await fetch(
-        `https://api.github.com/repos/${session!.user!.name}/${repoName}/contents/${file.path}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session!.accessToken}`,
-            Accept: "application/vnd.github.v3.raw",
-          },
-        },
-      );
-
-      const codeWithoutLineNumbers = await res.text();
-      const code = codeWithoutLineNumbers
-        .split("\n")
-        .map((line, index) => `${index + 1}|${line}`)
-        .join("\n");
-
-      const analysisRes = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-
-      const result = await analysisRes.json();
-      setAnalysisResult({
-        fileName: file.name,
-        score: result.score || 85,
-        issues: result.issues || [],
-      });
-    } catch (err) {
-      console.error("Error al analizar archivo:", err);
-      setError("Error al analizar el archivo");
-    } finally {
-      setAnalyzing(false);
     }
   }
 
   function renderFiles(fileList: RepositoryFile[], level = 0) {
-    return fileList
-      .filter((f) => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
-      .map((file) => {
-        const isDir = file.type === "dir";
-        const isExpanded = expandedFolders[file.path] !== undefined;
-        const isSelected = selectedFile?.path === file.path;
+    return fileList.map((file) => {
+      const isDir = file.type === "dir";
+      const isExpanded = expandedFolders[file.path] !== undefined;
+      const isSelected = selectedFile?.path === file.path;
 
-        return (
-          <div key={file.path}>
-            <div
-              className={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-all ${
-                isSelected
-                  ? "bg-accent/20 ring-accent ring-2 ring-inset"
-                  : "hover:bg-accent/10"
-              }`}
-              style={{ paddingLeft: `${level * 16 + 12}px` }}
-              onClick={() => handleSelectFile(file)}
-            >
-              {isDir && (
-                <span className="flex-shrink-0">
-                  {isExpanded ? (
-                    <ChevronDown className="text-muted-foreground h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="text-muted-foreground h-4 w-4" />
-                  )}
-                </span>
-              )}
-              {isDir ? (
-                <Folder className="text-accent h-4 w-4" />
-              ) : (
-                getFileIcon(file.name)
-              )}
-              <span className="text-foreground flex-1 truncate">
-                {file.name}
-              </span>
-            </div>
-
-            {isDir && expandedFolders[file.path] !== undefined && (
-              <div>
-                {expandedFolders[file.path] === null ? (
-                  <div
-                    className="text-muted-foreground flex items-center gap-2 py-2 text-sm"
-                    style={{ paddingLeft: `${(level + 1) * 16 + 12}px` }}
-                  >
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Loading...
-                  </div>
+      return (
+        <div key={file.path}>
+          <div
+            className={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-all ${
+              isSelected
+                ? "bg-accent/20 ring-accent ring-2 ring-inset"
+                : "hover:bg-accent/10"
+            }`}
+            style={{ paddingLeft: `${level * 16 + 12}px` }}
+            onClick={() => handleSelectFile(file)}
+          >
+            {isDir && (
+              <span className="flex-shrink-0">
+                {isExpanded ? (
+                  <ChevronDown className="text-muted-foreground h-4 w-4" />
                 ) : (
-                  renderFiles(expandedFolders[file.path]!, level + 1)
+                  <ChevronRight className="text-muted-foreground h-4 w-4" />
                 )}
-              </div>
+              </span>
             )}
+            {isDir ? (
+              <Folder className="text-accent h-4 w-4" />
+            ) : (
+              getFileIcon(file.name)
+            )}
+            <span className="text-foreground flex-1 truncate">{file.name}</span>
           </div>
-        );
-      });
+
+          {isDir && expandedFolders[file.path] !== undefined && (
+            <div>
+              {expandedFolders[file.path] === null ? (
+                <div
+                  className="text-muted-foreground flex items-center gap-2 py-2 text-sm"
+                  style={{ paddingLeft: `${(level + 1) * 16 + 12}px` }}
+                >
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Loading...
+                </div>
+              ) : (
+                renderFiles(expandedFolders[file.path]!, level + 1)
+              )}
+            </div>
+          )}
+        </div>
+      );
+    });
   }
 
   if (loading)
@@ -312,7 +256,7 @@ export default function Page() {
                 </p>
                 <Button
                   asChild
-                  className="gap-2 bg-teal-500 text-white transition-all hover:bg-teal-600"
+                  className={`gap-2 bg-teal-500 text-white transition-all hover:bg-teal-600 ${loading ? "disabled" : ""}`}
                   onClick={() => setLoadingAnalysis(true)}
                 >
                   <Link

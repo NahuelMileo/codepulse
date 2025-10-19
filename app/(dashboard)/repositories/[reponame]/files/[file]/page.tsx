@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
@@ -43,58 +43,64 @@ export default function Page() {
   );
   const [analyzing, setAnalyzing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isAnalyzed = useRef(false);
+  console.log(isAnalyzed);
+
+  const analyzeFile = useCallback(
+    async (repo: string, file: string) => {
+      setAnalyzing(true);
+      setAnalysisResult(null);
+      setError(null);
+
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/${session!.user!.name}/${repoName}/contents/${file}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session!.accessToken}`,
+              Accept: "application/vnd.github.v3.raw",
+            },
+          },
+        );
+        if (!res.ok) throw new Error("No se pudo obtener el archivo");
+
+        const codeWithoutLineNumbers = await res.text();
+        const code = codeWithoutLineNumbers
+          .split("\n")
+          .map((line, index) => `${index + 1}|${line}`)
+          .join("\n");
+
+        const analysisRes = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+
+        if (!analysisRes.ok) throw new Error("Error al analizar el archivo");
+
+        const result = await analysisRes.json();
+        setAnalysisResult({
+          fileName: file,
+          score: result.score || 85,
+          issues: result.issues || [],
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        console.error("Error al analizar archivo:", err);
+        setError(err.message);
+      } finally {
+        setAnalyzing(false);
+      }
+    },
+    [repoName, session],
+  );
 
   useEffect(() => {
     if (!session?.accessToken || !session.user?.name) return;
+    if (isAnalyzed.current) return;
     analyzeFile(repoName, filePath);
-  });
-
-  async function analyzeFile(repo: string, file: string) {
-    setAnalyzing(true);
-    setAnalysisResult(null);
-    setError(null);
-
-    try {
-      const res = await fetch(
-        `https://api.github.com/repos/${session!.user!.name}/${repoName}/contents/${file}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session!.accessToken}`,
-            Accept: "application/vnd.github.v3.raw",
-          },
-        },
-      );
-      console.log(res);
-      if (!res.ok) throw new Error("No se pudo obtener el archivo");
-
-      const codeWithoutLineNumbers = await res.text();
-      const code = codeWithoutLineNumbers
-        .split("\n")
-        .map((line, index) => `${index + 1}|${line}`)
-        .join("\n");
-
-      const analysisRes = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-
-      if (!analysisRes.ok) throw new Error("Error al analizar el archivo");
-
-      const result = await analysisRes.json();
-      setAnalysisResult({
-        fileName: file,
-        score: result.score || 85,
-        issues: result.issues || [],
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error("Error al analizar archivo:", err);
-      setError(err.message);
-    } finally {
-      setAnalyzing(false);
-    }
-  }
+    isAnalyzed.current = true;
+  }, [session, repoName, filePath, analyzeFile]);
 
   if (analyzing)
     return (
@@ -117,7 +123,7 @@ export default function Page() {
       <div className="flex flex-row justify-between">
         <div>
           <h1 className="text-foreground text-2xl font-bold">
-            <span className="text-teal-600">{fileName}</span> analysis
+            <span className="text-teal-500">{fileName}</span> analysis
           </h1>
           <p className="text-muted-foreground text-sm">
             Repository: {repoName}
@@ -140,7 +146,7 @@ export default function Page() {
             <div
               className={`rounded-md px-3 py-1 text-sm font-semibold ${
                 analysisResult.score >= 80
-                  ? "bg-green-100 text-green-700"
+                  ? "bg-teal-100 text-teal-500"
                   : analysisResult.score >= 60
                     ? "bg-yellow-100 text-yellow-700"
                     : "bg-red-100 text-red-700"
@@ -152,7 +158,7 @@ export default function Page() {
 
           <div className="space-y-3">
             {analysisResult.issues.length === 0 ? (
-              <div className="flex items-center gap-2 text-green-600">
+              <div className="flex items-center gap-2 text-teal-500">
                 <CheckCircle2 className="h-5 w-5" />
                 <p>No issues detected 🎉</p>
               </div>
@@ -170,13 +176,19 @@ export default function Page() {
                     <Activity className="mt-0.5 h-4 w-4 text-blue-500" />
                   )}
                   <div>
+                    <p className="text-muted-foreground text-sm">
+                      {issue.type}
+                    </p>
                     <p className="text-foreground font-medium">
                       {issue.message}
                     </p>
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      Line {issue.line} — {issue.type}
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-xs">
+                    <pre className="text-muted-foreground mt-1 text-sm">
+                      Line {issue.line} —{" "}
+                      <code className="bg-muted rounded p-2">
+                        {issue.snippet}
+                      </code>
+                    </pre>
+                    <p className="text-muted-foreground mt-1 text-sm">
                       <span className="text-foreground font-semibold">
                         Solution:
                       </span>{" "}
@@ -190,7 +202,7 @@ export default function Page() {
 
           <div className="pt-4">
             <Button
-              onClick={() => analyzeFile(repoName, fileName)}
+              onClick={() => analyzeFile(repoName, filePath)}
               className="gap-2 bg-teal-500 text-white hover:bg-teal-600"
             >
               <Activity className="h-4 w-4" />
