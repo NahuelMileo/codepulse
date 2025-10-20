@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import GitHubIcon from "../ui/GitHubIcon";
 import { motion } from "framer-motion";
 import background from "@/public/repositories.png";
+import Image from "next/image";
 
 interface SignInProps {
   loading: boolean;
@@ -20,7 +21,7 @@ export default function Page({ loading, handleSignIn }: SignInProps) {
         className="relative hidden w-1/2 items-center justify-center overflow-hidden text-white md:flex"
       >
         {/* Imagen de fondo */}
-        <img
+        <Image
           src={background.src}
           alt="Fondo CodePulse"
           className="absolute inset-0 h-full w-full object-cover opacity-60"
