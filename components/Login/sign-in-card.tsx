@@ -22,6 +22,7 @@ export default function Page({ loading, handleSignIn }: SignInProps) {
       >
         {/* Imagen de fondo */}
         <Image
+          priority
           src={background.src}
           alt="Fondo CodePulse"
           className="absolute inset-0 h-full w-full object-cover opacity-60"
