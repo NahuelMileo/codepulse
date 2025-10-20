@@ -1,8 +1,9 @@
 "use client";
-import { signInWithGithub } from "@/Application/Use-cases/auth/SignInWithGithub";
-import SignInCard from "@/components/Login/sign-in-card";
-import useAuthRedirect from "@/hooks/useAuthRedirect";
+
 import { useState } from "react";
+import { signInWithGithub } from "@/Application/Use-cases/auth/SignInWithGithub";
+import useAuthRedirect from "@/hooks/useAuthRedirect";
+import SignInCard from "@/components/Login/sign-in-card";
 
 export default function Page() {
   const [loading, setLoading] = useState(false);
