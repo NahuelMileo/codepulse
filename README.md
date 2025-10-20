@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ CodePulse — AI-Powered Repository Health Analyzer
 
-## Getting Started
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![NextJS](https://img.shields.io/badge/NextJS-15-black?logo=nextdotjs)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38bdf8?logo=tailwindcss)
+![ShadcnUI](https://img.shields.io/badge/UI-shadcn/ui-9f7aea?logo=react)
+![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-green)
+![Status](https://img.shields.io/badge/status-🚧_MVP_in_progress-orange)
 
-First, run the development server:
+> **CodePulse** es una herramienta impulsada por IA que analiza la **salud de tus repositorios** de GitHub: detecta code smells, evalúa la limpieza del código y propone mejoras estructurales.  
+> Ideal para programadores que buscan mantener estándares de calidad en sus proyectos, desde **junior hasta senior**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🧠 ¿Qué es CodePulse?
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+CodePulse nace con un objetivo claro:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> _Convertir el análisis de código en una experiencia inteligente, visual y accionable._
 
-## Learn More
+Con solo iniciar sesión mediante **GitHub OAuth**, puedes importar tus repositorios y obtener un **diagnóstico completo** del estado de tu código.  
+Cada repositorio obtiene una **puntuación de salud (0 a 100)** basada en métricas objetivas y buenas prácticas de ingeniería de software.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Características principales
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Categoría                   | Descripción                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 🔍 **Análisis Inteligente** | La IA evalúa el código en busca de _code smells_, malas prácticas y estructuras complejas.            |
+| 🧩 **Clean Code Score**     | Cada repositorio recibe una puntuación (0-100) basada en legibilidad, consistencia y arquitectura.    |
+| 🧠 **Insights Accionables** | Sugerencias específicas para mejorar tu código, no solo métricas abstractas.                          |
+| 🔐 **Login con GitHub**     | Integración directa con OAuth de GitHub: importa y analiza tus repos automáticamente.                 |
+| 🧱 **Arquitectura Limpia**  | Separación clara en capas: UI & Infrastructure, Application, Domain.                                  |
+| 🧑‍💻 **Interfaz moderna**     | Construida con **Next.js**, **TailwindCSS** y **Shadcn/UI**, priorizando rendimiento y accesibilidad. |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧰 Stack Tecnológico
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend & Backend:** [Next.js 15](https://nextjs.org/)
+- **UI:** [TailwindCSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+- **Lógica de aplicación:** Clean Architecture (Domain, Application, Infrastructure)
+- **Autenticación:** GitHub OAuth
+- **Base de datos:** (en desarrollo — se prevé PostgreSQL o Supabase)
+- **IA / Linter inteligente:** OpenAI API + reglas de análisis estático personalizadas
+- **Despliegue:** Vercel / Railway (según entorno)
