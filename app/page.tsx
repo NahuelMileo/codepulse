@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithGithub } from "@/Application/Use-cases/auth/SignInWithGithub";
+import { signInWithGithub } from "@/Application/use-cases/auth/SignInWithGithub";
 import useAuthRedirect from "@/hooks/useAuthRedirect";
 import SignInCard from "@/components/Login/sign-in-card";
 

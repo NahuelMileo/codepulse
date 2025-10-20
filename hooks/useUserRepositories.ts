@@ -1,4 +1,4 @@
-import { getUserRepositories } from "@/Application/Use-cases/repositories/getUserRepositories";
+import { getUserRepositories } from "@/Application/use-cases/repositories/getUserRepositories";
 import Repository from "@/types/Repository";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
