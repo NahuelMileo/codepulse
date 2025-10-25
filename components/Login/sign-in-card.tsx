@@ -13,15 +13,14 @@ interface SignInProps {
 export default function Page({ loading, handleSignIn }: SignInProps) {
   return (
     <div className="flex h-screen bg-white text-gray-900">
-      {/* Sección izquierda - Imagen / Branding */}
       <motion.div
         initial={{ x: -40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
         className="relative hidden w-1/2 items-center justify-center overflow-hidden text-white md:flex"
       >
-        {/* Imagen de fondo */}
         <Image
+          fill
           priority
           src={background.src}
           alt="Fondo CodePulse"
@@ -39,7 +38,6 @@ export default function Page({ loading, handleSignIn }: SignInProps) {
         </div>
       </motion.div>
 
-      {/* Sección derecha - Formulario */}
       <motion.div
         initial={{ x: 40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
